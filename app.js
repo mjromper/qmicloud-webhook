@@ -1,6 +1,5 @@
 'use strict'
 /* dependencies */
-const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
 
@@ -10,8 +9,8 @@ const app = express();
 const axios = require('axios');
 
 // Add body parser.
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.send("OK");
