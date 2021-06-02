@@ -2,11 +2,13 @@
 /* dependencies */
 const express = require('express');
 const path = require('path');
-
+const NodeCache = require( "node-cache" );
 
 // Create an Express application.
 const app = express();
+
 const axios = require('axios');
+const myCache = new NodeCache( { stdTTL: 300 } ); //5 minutes cache
 
 // Add body parser.
 app.use(express.json());
@@ -19,31 +21,40 @@ app.get('/', (req, res) => {
 // Add routers
 app.post('/', (req, res) => {
   
-  var event = req.body;
+  const event = req.body;
   if ( event.data  && event.data.context && event.data.context.activityLog ) {
-    var rgName = event.data.context.activityLog.resourceGroupName;
+    let rgName = event.data.context.activityLog.resourceGroupName;
     
-    var provId = rgName.split("-")[rgName.split("-").length-1];
-    var sendData = {
+    let provId = rgName.split("-")[rgName.split("-").length-1];
+    let sendData = {
       "provID": provId,
       "rgName": rgName,
       "cloudName": "QMI Automation",
-      "instanceState": process.env.TRIGGER_STATUS,
+      "instanceState": process.env.TRIGGER_STATUS || "Stopped",
       "logEvent": "AzureWebhook"
     };
     
-    
-    //Save user photo
-    axios({
-        method: 'post',
-        url: process.env.QMICLOUD_API_URL,
-        headers: { 'QMI-ApiKey' : process.env.QMICLOUD_KEY },
-        data: sendData
-    }).then(function (response) {
-        console.log("Sent to QMICLOUD", sendData);
-    }).catch(function(err){
-        console.log('Error# ', err);
-    });
+    let now = new Date();
+    now = now.toISOString();
+    if ( !myCache.get( provId ) ) {   
+      
+      console.log(`${now}# ProvId (${provId}). Sending '${sendData.instanceState}' to QMICLOUD...`);
+      
+      axios({
+          method: 'post',
+          url: process.env.QMICLOUD_API_URL,
+          headers: { 'QMI-ApiKey' : process.env.QMICLOUD_KEY },
+          data: sendData
+      }).then(function (response) {
+          myCache.set(provId, sendData);     
+      }).catch(function(err){
+          myCache.del(provId);
+          console.log('Error# ', err);
+      });
+      
+    } else {
+      console.log(`${now}# ProvId (${provId}) recently sent. Won't be sent again.`);
+    }
     
   }
   res.json(event);
