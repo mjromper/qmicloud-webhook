@@ -18,6 +18,6 @@ COPY --from=sources /app/package.json ./package.json
 COPY ./app.js ./app.js
 COPY ./index.js ./index.js
 
-EXPOSE 8080
+EXPOSE 80
 
 CMD ["node", "index.js"]
