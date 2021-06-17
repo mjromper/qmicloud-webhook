@@ -16,7 +16,7 @@ services:
             - QMICLOUD_API_URL=https://qmicloud.qliktech.com/api/v1/divvy/updates
             - QMICLOUD_KEY=xxx
         ports:
-            - "5000:5000"
+            - "5000:8080"
         networks:
             - whook
         
