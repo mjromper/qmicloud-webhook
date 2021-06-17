@@ -1,9 +1,9 @@
-let port = process.env.PORT || 5000;
+let port = process.env.PORT || 8080;
 
 const app = require('./app');
 
 // Start listening for requests.
-app.listen(port, '0.0.0.0', ()=>{
+app.listen(port, ()=>{
   console.log("Server is running on port ", port);
 });
 

@@ -1,0 +1,32 @@
+version: '3.7'
+
+networks:
+    whook:
+
+services:
+    app:
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        image: qlikgear/qmicloud-webhook:latest
+        container_name: qmicloud-webhook
+        restart: on-failure
+        environment:
+            - TRIGGER_STATUS=Stopped
+            - QMICLOUD_API_URL=https://qmicloud.qliktech.com/api/v1/divvy/updates
+            - QMICLOUD_KEY=4580d77e74993814484ccc1ba016b6e99da88a6b7d8148985a54c88b0a10b4ac668c293555c4248872a67f0e7404d4b1cf6c2eb8994ae99f430f3c5e17766a74
+        ports:
+            - "5000:5000"
+        networks:
+            - whook
+        
+    dozzle:
+        image: amir20/dozzle:latest
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+            - 8888:8080
+        #environment: 
+        #    DOZZLE_BASE: "/dozzle"
+        networks:
+            - whook
