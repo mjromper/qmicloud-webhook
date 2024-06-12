@@ -24,13 +24,12 @@ app.post('/', (req, res) => {
   now = now.toISOString();
   
   const event = req.body;
-  console.log(`${now}# Calling webhook POST endpoint, body`, event);
 
   if ( event.data  && event.data.context && event.data.context.activityLog ) {
-    let rgName = event.data.context.activityLog.resourceGroupName;
+    var rgName = event.data.context.activityLog.resourceGroupName;
     
-    let provId = rgName.split("-")[rgName.split("-").length-1];
-    let sendData = {
+    var provId = rgName.split("-")[rgName.split("-").length-1];
+    var sendData = {
       "provID": provId,
       "rgName": rgName,
       "cloudName": SERVICE_NAME,
@@ -38,10 +37,10 @@ app.post('/', (req, res) => {
       "logEvent": LOGEVENT_NAME
     };
      
-    
+
     if ( !myCache.get( provId ) ) {   
       
-      console.log(`${now}# ProvId (${provId}). Sending '${sendData.instanceState}' to QMICLOUD...`);
+      console.log(`${now}# ProvId (${provId}). Sending '${sendData.instanceState}' to QMICLOUD (${process.env.QMICLOUD_API_URL})...`, sendData);
       
       axios({
           method: 'post',
