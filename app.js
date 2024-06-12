@@ -3,6 +3,9 @@
 const express = require('express');
 const path = require('path');
 const NodeCache = require( "node-cache" );
+const TRIGGER_STATUS = process.env.TRIGGER_STATUS || "Stopped";
+const LOGEVENT_NAME = process.env.LOGEVENT_NAME || "AzureWebhook";
+const SERVICE_NAME = process.env.SERVICE_NAME || "QMI Automation";
 
 // Create an Express application.
 const app = express();
@@ -14,14 +17,15 @@ const myCache = new NodeCache( { stdTTL: 300 } ); //5 minutes cache
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.send("OK");
-});
-
 // Add routers
 app.post('/', (req, res) => {
   
+  var now = new Date();
+  now = now.toISOString();
+  
   const event = req.body;
+  console.log(`${now}# Calling webhook POST endpoint, body`, event);
+
   if ( event.data  && event.data.context && event.data.context.activityLog ) {
     let rgName = event.data.context.activityLog.resourceGroupName;
     
@@ -29,13 +33,12 @@ app.post('/', (req, res) => {
     let sendData = {
       "provID": provId,
       "rgName": rgName,
-      "cloudName": "QMI Automation",
-      "instanceState": process.env.TRIGGER_STATUS || "Stopped",
-      "logEvent": "AzureWebhook"
+      "cloudName": SERVICE_NAME,
+      "instanceState": TRIGGER_STATUS,
+      "logEvent": LOGEVENT_NAME
     };
+     
     
-    let now = new Date();
-    now = now.toISOString();
     if ( !myCache.get( provId ) ) {   
       
       console.log(`${now}# ProvId (${provId}). Sending '${sendData.instanceState}' to QMICLOUD...`);
@@ -59,6 +62,11 @@ app.post('/', (req, res) => {
   }
   res.json(event);
 })
+
+app.post('/test', (req, res) => {
+  console.log("Calling /test POST endpoint");
+  res.send("OK");
+});
 
 app.use((req, res, next) => res.send("404"))
 app.use((err, req, res, next) => {

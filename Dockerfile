@@ -1,5 +1,5 @@
 # Stage 1: 
-FROM node:15.12.0-alpine AS sources
+FROM node:20.14-alpine AS sources
 
 RUN apk --no-cache add yarn git
   
@@ -18,6 +18,6 @@ COPY --from=sources /app/package.json ./package.json
 COPY ./app.js ./app.js
 COPY ./index.js ./index.js
 
-EXPOSE 80
+EXPOSE 5050
 
 CMD ["node", "index.js"]
